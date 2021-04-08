@@ -28,8 +28,16 @@ with open('games.json') as f:
 #####waas i white?
 holder= holder.query('rated == True') ## only rated games
 
-holder['MacaqueWhite'] = pd.Series([i.get('white').get('user').get('name') =='macaqueattack' for i in holder.players])
-holder['MacaqueBlack'] = pd.Series([i.get('black').get('user').get('name') =='macaqueattack' for i in holder.players])
+
+holder['MacaqueWhite'] =holder.players.apply(lambda row: row.get('white').get('user').get('name') =='macaqueattack')
+holder['MacaqueBlack']= ~holder['MacaqueWhite']
+
+holder['my_rating'] = holder.apply(lambda row: row['players'].get('white' if row['MacaqueWhite'] else 'black').get('rating'), axis = 1)
+holder['opp_rating'] = holder.apply(lambda row: row['players'].get('white' if row['MacaqueBlack'] else 'black').get('rating'), axis = 1)
+holder['rating_diff']= holder['my_rating'] - holder['opp_rating']
+
+holder['my_rating_change'] = holder.apply(lambda row: row['players'].get('white' if row['MacaqueWhite'] else 'black').get('ratingDiff'), axis = 1)
+holder['new_rating'] = holder['my_rating']+ holder['my_rating_change']
 
 
 #0/1/0.5 score
@@ -55,9 +63,13 @@ holder['within_session'] = holder.groupby(['session']).cumcount()+1  ##within se
 
 holder['within_day'] = holder.groupby(['Date']).cumcount()+1  ##within day
 
+holder['last_3_days']=  holder.createdAt.loc[::-1].expanding(1).apply(lambda x: sum(abs(max(x)-x) <1000*60*60*72 )).loc[::-1]
 
+#explore hoe my ( then others) rating fluctuates. in particular, around the xx00 resistance points . do people stop playinh once this is hit? should the?
 
 filtered = holder.dropna(subset = ['score','lag1'])    ##drop nas
+
+filtered =filtered.iloc[:-100] #drop 100 last rows for last_3 warm-up
 
 
 filtered['score']= pd.to_numeric(filtered['score'])
@@ -70,7 +82,7 @@ filtered.to_csv('data.csv')
 #steps
 
 ## TOTAL DAILY!
-### rolling sum
+
 
 #rating difference
 
