@@ -30,7 +30,7 @@ holder= holder.query('rated == True') ## only rated games
 
 
 holder['MacaqueWhite'] =holder.players.apply(lambda row: row.get('white').get('user').get('name') =='macaqueattack')
-holder['MacaqueBlack']= ~holder['MacaqueWhite']
+holder['MacaqueBlack']= holder['MacaqueWhite']
 
 holder['my_rating'] = holder.apply(lambda row: row['players'].get('white' if row['MacaqueWhite'] else 'black').get('rating'), axis = 1)
 holder['opp_rating'] = holder.apply(lambda row: row['players'].get('white' if row['MacaqueBlack'] else 'black').get('rating'), axis = 1)
@@ -76,15 +76,9 @@ filtered['score']= pd.to_numeric(filtered['score'])
 
 filtered.to_csv('data.csv')
 ##feature :: sunglisht?  <--  needs my local clock
-##garmin
+
 ##activities
-#calorie
-#steps
 
-## TOTAL DAILY!
-
-
-#rating difference
 
 ##modelling 1) gam
 ##modelling 2) pycaret
