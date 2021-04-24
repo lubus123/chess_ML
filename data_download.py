@@ -1,6 +1,5 @@
 import requests, json
 
-
 url = "https://www.lichess.org/api/games/user/macaqueattack"
 
 r = requests.get(

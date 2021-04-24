@@ -4,6 +4,9 @@ import seaborn as sns
 import plotly.graph_objects as go
 import plotly.io as pio
 import datetime as dt
+
+from statsmodels.tsa.seasonal import seasonal_decompose
+
 pio.renderers.default = "browser"
 
 chess_result = pd.read_csv('data.csv').query('speed == "blitz"')
@@ -26,6 +29,20 @@ full['time_awake'] = full.createdAt.apply(lambda x: helper(x))
 
 full.query('time_awake<30').time_awake.hist(bins=40)
 
+full['roll_rating_30'] = full.loc[::-1].my_rating.rolling(30).median().loc[::-1]
+full['roll_30_delta'] = full['roll_rating_30'] -full.opp_rating
+full['roll_rating_90'] = full.loc[::-1].my_rating.rolling(90).median().loc[::-1]
+full['roll_90_delta'] = full['roll_rating_90'] -full.opp_rating
+full['roll_rating_200'] = full.loc[::-1].my_rating.rolling(90).median().loc[::-1]
+full['roll_200_delta'] = full['roll_rating_200'] -full.opp_rating
+
+
+full['roll_rating'].iloc[::-1].reset_index().dropna().roll_rating.plot(ylim=[1400,2000])
+
+full.to_csv('full.csv')
+result = seasonal_decompose(full['roll_rating'].iloc[::-1].reset_index().dropna().roll_rating, model='additive',period=300)
+result.plot()
+plt.show()
 
 ######calculate how many games since awake
 ###### relative performance (median last 100 ELO vs opponent ELO ) - get rating change
