@@ -37,7 +37,7 @@ full['roll_rating_200'] = full.loc[::-1].my_rating.rolling(90).median().loc[::-1
 full['roll_200_delta'] = full['roll_rating_200'] -full.opp_rating
 
 
-full['roll_rating'].iloc[::-1].reset_index().dropna().roll_rating.plot(ylim=[1400,2000])
+full['roll_rating_30'].iloc[::-1].reset_index().dropna().roll_rating_30.plot(ylim=[1400,2000])
 
 full.to_csv('full.csv')
 result = seasonal_decompose(full['roll_rating'].iloc[::-1].reset_index().dropna().roll_rating, model='additive',period=300)
@@ -46,6 +46,10 @@ plt.show()
 
 ######calculate how many games since awake
 ###### relative performance (median last 100 ELO vs opponent ELO ) - get rating change
+full = pd.read_csv('full.csv')
+
+oponents = full.opp_id.value_counts()
+oponents.to_frame().reset_index().query('opp_id >3 and opp_id < 13')
 
 DAY_SUM = full.groupby('Date', as_index=False).agg(
     n_games =pd.NamedAgg(column='session', aggfunc=len),
@@ -57,6 +61,25 @@ DAY_SUM = full.groupby('Date', as_index=False).agg(
 )
 DAY_SUM['rating_var']= DAY_SUM['rating_max']-DAY_SUM['rating_min']
 
+
+
+
+
+SESSION_SUM = full.groupby('session', as_index=False).agg(
+    n_games =pd.NamedAgg(column='session', aggfunc=len),
+    rating_min = pd.NamedAgg(column='new_rating', aggfunc=min),
+    rating_max = pd.NamedAgg(column='new_rating', aggfunc=max),
+    rating_end = pd.NamedAgg(column='new_rating', aggfunc= lambda x: x.iloc[-1]),
+    rating_open = pd.NamedAgg(column='my_rating', aggfunc= lambda x: x.iloc[0]),
+    time_awake = pd.NamedAgg(column = 'time_awake',aggfunc = max),
+)
+SESSION_SUM['rdiff'] = SESSION_SUM['rating_end'] - SESSION_SUM['rating_open']
+SESSION_SUM['rdiff_norm'] = (SESSION_SUM['rating_end'] - SESSION_SUM['rating_open']) / SESSION_SUM['n_games']
+
+sns.regplot(x ='time_awake', y='rdiff',data=SESSION_SUM.query('n_games>4 and time_awake<40'))
+plt.show()
+##do first 3 game affect result?
+
 fig = go.Figure(data=go.Ohlc(x=DAY_SUM['Date'],
                     open=DAY_SUM['rating_open'],
                     high=DAY_SUM['rating_max'],
@@ -64,6 +87,12 @@ fig = go.Figure(data=go.Ohlc(x=DAY_SUM['Date'],
                     close=DAY_SUM['rating_end']))
 fig.show()
 ####fill in empty time slots. does taking break help?
+
+
+## performance metrics:
+#winrate
+#points +-
+#point
 
 ### analyse worst days. what went wrong?
 

@@ -47,10 +47,12 @@ Active_Data_Full = pd.merge(bigdf[['totalsleep','sleepend','sleepstart','remSlee
 
 Active_Data_Full['sleepend'] = pd.to_datetime(Active_Data_Full.sleepend).dt.time
 Active_Data_Full['sleepstart'] =  pd.to_datetime(Active_Data_Full.sleepstart).dt.time
-
+Active_Data_Full['sleep_dp1']=Active_Data_Full.totalsleep.shift(1)
 Active_Data_Full.to_csv('garmin_data.csv')
 
 
 ###seperate write up - does exercise result in more sleep, on average?
 
 ## if i can find hr data, his could be good for ts. clustering
+
+

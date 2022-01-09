@@ -1,5 +1,8 @@
 import json
 
+
+
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,12 +33,12 @@ holder= holder.query('rated == True') ## only rated games
 
 
 holder['MacaqueWhite'] =holder.players.apply(lambda row: row.get('white').get('user').get('name') =='macaqueattack')
-holder['MacaqueBlack']= holder['MacaqueWhite']
+holder['MacaqueBlack']=  holder['MacaqueWhite'].apply(lambda x: not x)
 
 holder['my_rating'] = holder.apply(lambda row: row['players'].get('white' if row['MacaqueWhite'] else 'black').get('rating'), axis = 1)
 holder['opp_rating'] = holder.apply(lambda row: row['players'].get('white' if row['MacaqueBlack'] else 'black').get('rating'), axis = 1)
 holder['rating_diff']= holder['my_rating'] - holder['opp_rating']
-holder['opp_id'] =holder.apply(lambda row: row['players'].get('white' if not row['MacaqueBlack'] else 'black').get('user').get('id'), axis = 1)
+holder['opp_id'] =holder.apply(lambda row: row['players'].get('white' if not row['MacaqueWhite'] else 'black').get('user').get('id'), axis = 1)
 
 holder['my_rating_change'] = holder.apply(lambda row: row['players'].get('white' if row['MacaqueWhite'] else 'black').get('ratingDiff'), axis = 1)
 holder['new_rating'] = holder['my_rating']+ holder['my_rating_change']
